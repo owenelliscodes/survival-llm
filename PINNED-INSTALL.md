@@ -11,7 +11,7 @@ Model pulls are disabled to prevent refreshing a mutable registry tag.
 The prepared Granite 4.2 8B model files are verified against the captured manifest.
 
 The native Mac launcher keeps settings, logs, personal files and models in `Data`
-next to the app bundle. Its library defaults to `Data/Library.noindex`.
+next to the app bundle. Its library is fixed at `Data/Library.noindex` for this self-contained installation.
 Keep the app and `Data` together when moving this installation. The launcher uses
 the bundled Ollama command-line engine on `127.0.0.1:11435`, disables cloud features,
 and never launches a separately installed Ollama desktop app. Inference endpoints

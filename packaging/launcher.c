@@ -31,6 +31,8 @@ int main(int argc, char **argv) {
     strncat(data, "/Data", sizeof(data) - strlen(data) - 1);
     if (mkdir(data, 0755) != 0 && errno != EEXIST) return 1;
     setenv("SURVIVAL_LLM_APP_DIR", data, 1);
+    snprintf(path, sizeof path, "%s/Library.noindex", data);
+    setenv("SURVIVAL_LLM_LIBRARY", path, 1);
     snprintf(path, sizeof path, "%s/Files", data);
     setenv("SURVIVAL_LLM_FILES", path, 1);
     snprintf(path, sizeof path, "%s/models", data);
