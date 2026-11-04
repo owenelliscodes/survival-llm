@@ -1,5 +1,7 @@
 # Survival LLM
 
+**Personal pinned fork:** see [PINNED-INSTALL.md](PINNED-INSTALL.md) for the build, data locations and update policy. The historical upstream instructions below do not override that policy.
+
 A free AI assistant and survival library that runs entirely on your own computer and works with no
 internet. Ask it how to keep food safe in a blackout, treat a burn or purify water: it searches an
 offline library of medical, emergency, how-to and encyclopedia articles, answers from what it finds,
@@ -11,7 +13,7 @@ and shows you the exact passage each answer came from.
 - **Yours to adjust.** The Instructions button shows the instructions the AI gets before you ask anything (the app adds today's date, the names of your files and your Memory notes after them); edit them and Save to change how it answers (Reset brings back the original). The Length limit next to Send sets how long an answer may run, or turns the limit off.
 - **Add your own files.** Your files, at the top, takes PDFs, Word documents, EPUB ebooks, web pages and text files (drop them on the window or choose them), so the AI can search your generator's manual, your medicines list or your family's emergency plan along with the library. They stay on your computer, in the `Survival LLM Files` folder in your home folder; files you put in that folder, or change there, are picked up on their own. It can't read scans or photos of pages yet.
 - **Remembers you.** Tell it your daughter is allergic to penicillin or that you have a Honda generator, and it saves a short note so later chats know it too; each answer shows what it saved, with Undo. Memory, at the top, shows every note in one list you can edit, and a switch turns off the AI's saving (it still reads the notes you keep). The notes stay on your computer, in one plain text file with the app's settings.
-- **Updates itself.** Check for updates, at the bottom of the window, looks for a new version (it also looks once a day while it runs, by fetching one small file from the project's web page; nothing about you is sent). Update now downloads it, checks it, and restarts into it, keeping your models, library, files and settings. Newer libraries are offered there too.
+- **Updates disabled in this fork.** No automatic/manual update checks or app replacement. The library catalog and installed model files are pinned. Changes require the owner's review.
 - **Built for emergencies.** About 1.5 million articles (500,000 in the smaller download): about 930,000 of Wikipedia's most-read articles, WikiMed, MedlinePlus, a UK medicines guide, WikEM, Ready.gov, CDC, U.S. military and FEMA survival and first-aid manuals, the USDA canning guide, risk references for estimating micromorts (life tables, U.S. death rates), wikiHow, iFixit, Appropedia, Energypedia and practical Q&A. See [SOURCES.md](SOURCES.md).
 
 ## Install

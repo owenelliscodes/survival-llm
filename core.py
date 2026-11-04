@@ -13,7 +13,11 @@ import urllib.request
 from library.search import STOPWORDS, TOPICS
 from memory import _stems, asked_memory, forgets
 
-HOST = "http://" + os.environ.get("OLLAMA_HOST", "127.0.0.1:11434")
+# Never send questions to a remote inference server in this offline fork.
+_ollama_address = os.environ.get("OLLAMA_HOST", "127.0.0.1:11434")
+if not re.fullmatch(r"127\.0\.0\.1:[0-9]{1,5}", _ollama_address):
+    raise ValueError("OLLAMA_HOST must be a 127.0.0.1 loopback address in this fork")
+HOST = "http://" + _ollama_address
 MAX_TOOL_ROUNDS = 6
 # Longest reply the model may write in one go, set by the person's "Length limit" (tokens; -1 = no limit). A model
 # stuck repeating itself would otherwise run, and drain the battery, until someone noticed (Qwen 3.6 once went an

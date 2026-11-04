@@ -7,7 +7,8 @@
 #   build.sh mac   only the Mac app (dist/mac and its zip), as bin/dev --release runs it
 #   build.sh dev   only "Survival LLM Dev" in ~/Applications: the Mac app running the code in this folder (bin/dev)
 set -euo pipefail
-TARGET="${1:-all}"
+TARGET="${1:-mac}"
+[ "$TARGET" = mac ] || { echo "This reviewed build supports mac only." >&2; exit 2; }
 case "$TARGET" in all|mac|dev) ;; *) echo "usage: packaging/build.sh [mac|dev]" >&2; exit 2 ;; esac
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -29,6 +30,7 @@ mkdir -p "$CACHE" "$DIST"
 fetch_python() {  # $1 = target triple
   local file="cpython-$PBS_PY+$PBS_TAG-$1-install_only_stripped.tar.gz"
   [ -f "$CACHE/$file" ] || curl -L --fail -sS -o "$CACHE/$file" "$PBS_URL/$file"
+  [ "$(shasum -a 256 "$CACHE/$file" | cut -d' ' -f1)" = "7b8d00b751db21cea87dc551a8f8165147c5fbc5251d5537d7e5497dde00a219" ] || { echo "Python checksum mismatch" >&2; exit 1; }
   echo "$CACHE/$file"
 }
 
@@ -38,7 +40,8 @@ copy_app() {  # $1 = destination folder for the app code
   cp "$REPO/library/search.py" "$REPO/library/passages.py" "$REPO/library/myfiles.py" "$1/library/"
   cp "$REPO/app/server.py" "$1/app/"
   cp "$REPO/app/static/"* "$1/app/static/"
-  cp "$REPO/LICENSE" "$REPO/README.md" "$REPO/SOURCES.md" "$1/"
+  cp "$REPO/LICENSE" "$REPO/README.md" "$REPO/SOURCES.md" "$REPO/library-packs.json" "$REPO/PINNED-INSTALL.md" "$1/"
+  git -C "$REPO" rev-parse HEAD > "$1/build-commit.txt"
   echo "$VERSION" > "$1/version.txt"  # the app compares it with the published update.json
 }
 
@@ -48,6 +51,7 @@ fetch_ollama() {  # $1 = release file name; checked against Ollama's published c
   [ -f "$CACHE/$file" ] || curl -L --fail -sS -o "$CACHE/$file" "$OLLAMA_URL/$1"
   local want; want="$(grep " \./$1\$" "$CACHE/ollama-sha256-$OLLAMA_VERSION.txt" | cut -d' ' -f1)"
   [ "$(shasum -a 256 "$CACHE/$file" | cut -d' ' -f1)" = "$want" ] || { echo "checksum mismatch: $file" >&2; exit 1; }
+  [ "$(shasum -a 256 "$CACHE/$file" | cut -d' ' -f1)" = "aea7d3f2e32371b7644a6e2ec8d4f26820a0e3965918cce8a46cef3e947f6291" ] || { echo "Pinned Ollama checksum mismatch" >&2; exit 1; }
   echo "$CACHE/$file"
 }
 
@@ -101,7 +105,7 @@ RES="$APP/Contents/Resources"
 rm -rf "$DIST/mac"
 mkdir -p "$APP/Contents/MacOS" "$RES"
 tar -xzf "$(fetch_python aarch64-apple-darwin)" -C "$RES"
-"$RES/python/bin/python3" -m pip install -q --no-compile --disable-pip-version-check "$PYWEBVIEW" "$PYPDF" "$TRUSTSTORE"
+"$RES/python/bin/python3" -m pip --isolated install --no-index --no-cache-dir --no-compile --disable-pip-version-check --only-binary=:all: --require-hashes --find-links "$CACHE/wheels" -r "$HERE/requirements-mac.lock"
 rm -rf "$RES/python/lib/python3.12/site-packages/PyObjCTest"  # pyobjc's own test suite
 copy_app "$RES/app"
 clang -O2 -arch arm64 -mmacosx-version-min=14.0 "$HERE/launcher.c" -o "$APP/Contents/MacOS/Survival LLM" \

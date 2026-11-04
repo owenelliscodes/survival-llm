@@ -2,6 +2,7 @@
 // (its own Dock icon, name and menu) instead of as "Python". build.sh compiles it into Contents/MacOS.
 // Compiled with -DSURVIVAL_LLM_DEV, it is the dev copy's (bin/dev): its own log, and settings from dev.env.
 #include <Python.h>
+#include <errno.h>
 #include <limits.h>
 #include <mach-o/dyld.h>
 #include <stdio.h>
@@ -23,15 +24,25 @@ int main(int argc, char **argv) {
     snprintf(res, sizeof res, "%s/../Resources", real);
     snprintf(home, sizeof home, "%s/python", res);
     snprintf(script, sizeof script, "%s/app/app/server.py", res);
-    const char *user = getenv("HOME");
-    if (user) {  // keep a log; there is no terminal to print to
-        snprintf(log, sizeof log, "%s/Library/Logs", user);
-        mkdir(log, 0755);
-        snprintf(log, sizeof log, "%s/Library/Logs/" LOG_NAME, user);
-        freopen(log, "a", stdout);
-        freopen(log, "a", stderr);
-        setvbuf(stdout, NULL, _IOLBF, 0);
-    }
+    // Keep this installation and its models independent from system-wide Ollama.
+    char data[PATH_MAX], path[PATH_MAX];
+    snprintf(path, sizeof path, "%s/../../..", real);
+    if (!realpath(path, data)) return 1;
+    strncat(data, "/Data", sizeof(data) - strlen(data) - 1);
+    if (mkdir(data, 0755) != 0 && errno != EEXIST) return 1;
+    setenv("SURVIVAL_LLM_APP_DIR", data, 1);
+    snprintf(path, sizeof path, "%s/Files", data);
+    setenv("SURVIVAL_LLM_FILES", path, 1);
+    snprintf(path, sizeof path, "%s/models", data);
+    setenv("OLLAMA_MODELS", path, 1);
+    setenv("OLLAMA_HOST", "127.0.0.1:11435", 1);
+    setenv("OLLAMA_NO_CLOUD", "1", 1);
+    setenv("NO_PROXY", "127.0.0.1,localhost", 1);
+    setenv("no_proxy", "127.0.0.1,localhost", 1);
+    snprintf(log, sizeof log, "%s/app.log", data);
+    freopen(log, "a", stdout);
+    freopen(log, "a", stderr);
+    setvbuf(stdout, NULL, _IOLBF, 0);
 #ifdef SURVIVAL_LLM_DEV
     // KEY=value lines that keep the dev copy apart from the installed app (its own settings folder). Ones already
     // in the environment win, so bin/dev --fresh can point it somewhere else.
